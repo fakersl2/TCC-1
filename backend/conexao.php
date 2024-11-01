@@ -10,7 +10,7 @@ if ($conexao->connect_error) {
 }
 
 // Criar banco de dados
-$conexao->query("CREATE DATABASE IF NOT EXISTS bancoRocketStore");
+$conexao->query("CREATE DATABASE IF NOT EXISTS bancoRocketStore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 $conexao->select_db("bancoRocketStore");
 
 // Criar tabelas
@@ -32,6 +32,25 @@ $conexao->query("CREATE TABLE IF NOT EXISTS fornecedor (
     telefoneFornecedor VARCHAR(200) NOT NULL,
     fkIdEndereco INT NOT NULL,
     FOREIGN KEY (fkIdEndereco) REFERENCES endereco(idEndereco) ON DELETE CASCADE
+)");
+
+$conexao->query("CREATE TABLE IF NOT EXISTS colecao (
+    idColecao INT PRIMARY KEY AUTO_INCREMENT,
+    nomeColecao VARCHAR(200) NOT NULL
+)");
+
+$conexao->query("CREATE TABLE IF NOT EXISTS produto (
+    idProduto INT AUTO_INCREMENT PRIMARY KEY,
+    nomeProduto VARCHAR(100) NOT NULL,
+    marcaProduto VARCHAR(100) NOT NULL,
+    precoProduto DECIMAL(10, 2) NOT NULL,
+    categoriaProduto VARCHAR(100) NOT NULL,
+    descricaoProduto VARCHAR(100) NOT NULL,
+    imagemProduto MEDIUMBLOB,
+    fkIdFornecedor INT NOT NULL,
+    fkIdColecao INT NOT NULL,
+    FOREIGN KEY (fkIdFornecedor) REFERENCES fornecedor(idFornecedor) ON DELETE CASCADE,
+    FOREIGN KEY (fkIdColecao) REFERENCES colecao(idColecao) ON DELETE CASCADE
 )");
 
 $conexao->query("CREATE TABLE IF NOT EXISTS cadastro (
@@ -65,18 +84,6 @@ $conexao->query("CREATE TABLE IF NOT EXISTS usuario (
     FOREIGN KEY (fkIdEndereco) REFERENCES endereco(idEndereco) ON DELETE CASCADE
 )");
 
-$conexao->query("CREATE TABLE IF NOT EXISTS produto (
-    idProduto INT AUTO_INCREMENT PRIMARY KEY,
-    nomeProduto VARCHAR(100) NOT NULL,
-    marcaProduto VARCHAR(100) NOT NULL,
-    precoProduto DECIMAL(10, 2) NOT NULL,
-    categoriaProduto VARCHAR(100) NOT NULL,
-    descricaoProduto VARCHAR(100) NOT NULL,
-    imagemProduto MEDIUMBLOB,
-    fkIdFornecedor INT NOT NULL,
-    FOREIGN KEY (fkIdFornecedor) REFERENCES fornecedor(idFornecedor) ON DELETE CASCADE
-)");
-
 $conexao->query("CREATE TABLE IF NOT EXISTS carrinho (
     idCarrinho INT PRIMARY KEY AUTO_INCREMENT,
     fkIdProduto INT NOT NULL,
@@ -88,19 +95,24 @@ $conexao->query("CREATE TABLE IF NOT EXISTS carrinho (
     FOREIGN KEY (fkIdCadastro) REFERENCES cadastro(id_cadastro) ON DELETE CASCADE
 )");
 
+
 // Verificar e criar o administrador
 $emailAdmin = 'admin@rocketstore.com';
-$sqlVerificarAdmin = "SELECT * FROM administrador WHERE email = '$emailAdmin'";
-$resultado = $conexao->query($sqlVerificarAdmin);
+$sqlVerificarAdmin = "SELECT * FROM administrador WHERE email = ?";
+$stmt = $conexao->prepare($sqlVerificarAdmin);
+$stmt->bind_param("s", $emailAdmin);
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 if ($resultado->num_rows == 0) {
     $nomeAdmin = 'Administrador';
     $senhaAdmin = 'admin@rocketstore.com';
 
-    $sqlInserirAdmin = "INSERT INTO administrador (nome, email, senha) 
-                        VALUES ('$nomeAdmin', '$emailAdmin', '$senhaAdmin')";
+    $sqlInserirAdmin = "INSERT INTO administrador (nome, email, senha) VALUES (?, ?, ?)";
+    $stmt = $conexao->prepare($sqlInserirAdmin);
+    $stmt->bind_param("sss", $nomeAdmin, $emailAdmin, $senhaAdmin);
 
-    if ($conexao->query($sqlInserirAdmin) === TRUE) {
+    if ($stmt->execute() === TRUE) {
     } else {
     }
 }

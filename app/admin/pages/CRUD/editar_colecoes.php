@@ -2,8 +2,24 @@
 session_start();
 include("../../../../backend/conexao.php");
 
-$sql = "SELECT * FROM produto";
-$resultado = $conexao->query($sql);
+$id = $_GET['id'];
+$sql = "SELECT * FROM colecao WHERE idColecao = ?";
+$stmt = $conexao->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$resultado = $stmt->get_result();
+$produto = $resultado->fetch_assoc();
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nomeColecao = $_POST['nomeColecao'];
+
+    $stmt = $conexao->prepare("UPDATE colecao SET nomeProduto = ? WHERE idColecao = ?");
+    $stmt->bind_param("ssii", $nomeColecao, $idColecao);
+    $stmt->execute();
+
+    header("Location: listar_colecoes.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -11,12 +27,12 @@ $resultado = $conexao->query($sql);
 
 <head>
     <meta charset="UTF-8">
-    <title>Listar Produtos</title>
+    <title>Editar Produto</title>
+    <link href="../../../public/css/output.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
 
-<body class="bg-gray-100">
-
+<body>
     <!-- Navbar e Aside-->
     <nav class="sticky top-0 z-10 px-3 py-3 bg-white border-b-2 border-gray-200 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
@@ -65,8 +81,7 @@ $resultado = $conexao->query($sql);
 
                         <ul class="py-1" role="none">
                             <li>
-                                <a href="../CRUD/listar_produtos.html"
-                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
                                     role="menuitem">Dashboard</a>
                             </li>
                             <li>
@@ -124,10 +139,11 @@ $resultado = $conexao->query($sql);
 
                     <!-- Conteúdo do dropdown -->
                     <div id="dropdown-example" class="hidden mt-2 space-y-2">
-                        <a href="../CRUD/criar_produtos.php"
+                        <a href="./CRUD/criar_produtos.php"
                             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Adicionar
                             Produto</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Lista
+                        <a href="./CRUD/listar_produtos.php"
+                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Lista
                             de Produtos</a>
                     </div>
 
@@ -151,15 +167,14 @@ $resultado = $conexao->query($sql);
                     </a>
                 </li>
                 <li>
-                    <a href="cadastrar_forn.php"
-                        class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 ">
+                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 ">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 "
                             aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 20 18">
                             <path
                                 d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z" />
                         </svg>
-                        <span class="flex-1 ms-3 whitespace-nowrap">Fornecedores</span>
+                        <span class="flex-1 ms-3 whitespace-nowrap">Users</span>
                     </a>
                 </li>
                 <li>
@@ -177,55 +192,39 @@ $resultado = $conexao->query($sql);
         </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteudo -->
     <div class="relative w-full max-w-5xl p-6 mx-auto ml-64 sm:p-5">
         <div class="p-6">
-            <h1 class="text-xl font-bold">Lista de Produtos</h1>
+            <h1 class="mb-4 text-2xl font-bold">Editar Produto</h1>
+            <form method="POST">
+                <div class="grid gap-4 mb-4 sm:grid-cols-2">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700" for="nomeProduto">Nome:</label>
+                        <input class="block w-full p-2 mt-1 border border-gray-300 rounded-md" type="text"
+                            name="nomeProduto" value="<?php echo $produto['nomeColecao']; ?>" required>
+                    </div>
+
+                    <button type="submit"
+                        class="text-white inline-flex items-center bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
+                        <svg class="w-6 h-6 mr-1 -ml-1" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        Atualizar Produto
+                    </button>
+
+                    <a class="text-white inline-flex items-center bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                        href="listar_colecoes.php">Voltar
+                    </a>
+            </form>
         </div>
-        <table class="min-w-full mt-4 overflow-hidden bg-white rounded-lg shadow-md">
-            <thead>
-                <tr class="text-white bg-gray-800">
-                    <th class="px-4 py-3 text-left">ID</th>
-                    <th class="px-4 py-3 text-left">Nome</th>
-                    <th class="px-4 py-3 text-left">Preço</th>
-                    <th class="px-4 py-3 text-left">Categoria</th>
-                    <th class="px-4 py-3 text-left">Marca</th>
-                    <th class="px-4 py-3 text-left">Coleção</th>
-                    <th class="px-4 py-3 text-left">Descrição</th>
-                    <th class="px-4 py-3 text-left">Imagem</th>
-                    <th class="px-4 py-3 text-left">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($produto = $resultado->fetch_assoc()): ?>
-                    <tr class="border-b">
-                        <td class="px-4 py-3"><?php echo $produto['idProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['nomeProduto']; ?></td>
-                        <td class="px-4 py-4">R$
-                            <?php echo number_format($produto['precoProduto'], 2, ',', '.'); ?>
-                        </td>
-                        <td class="px-4 py-3"><?php echo $produto['categoriaProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['marcaProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['colecaoProduto']; ?></td>
-                        <td class="px-4 py-3">
-                            <?php echo substr($produto['descricaoProduto'], 0, 50) . (strlen($produto['descricaoProduto']) > 50 ? '...' : ''); ?>
-                        </td>
-                        <td class="px-4 py-3">
-                            <img src="/Tcc/public/uploads/<?php echo htmlspecialchars($produto['imagemProduto']); ?>"
-                                alt="<?php echo htmlspecialchars($produto['nomeProduto']); ?>"
-                                class="object-cover w-16 h-16">
-                        </td>
-                        <td class="px-4 py-3">
-                            <a href="editar_produtos.php?id=<?php echo $produto['idProduto']; ?>"
-                                class="text-purple-500 hover:underline">Editar</a>
-                            <a href="deletar_produtos.php?id=<?php echo $produto['idProduto']; ?>"
-                                class="ml-4 text-red-500 hover:underline">Deletar</a>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
     </div>
+    </div>
+
+    <a href="listar_produtos.php">Voltar</a>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>

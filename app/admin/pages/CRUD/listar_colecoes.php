@@ -1,5 +1,9 @@
 <?php
 session_start();
+include("../../../../backend/conexao.php");
+
+$sql = "SELECT * FROM colecao";
+$resultado = $conexao->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -7,12 +11,13 @@ session_start();
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../../../public/css/output.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <title>Listar Coleções</title>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
 
-<body>
+<body class="bg-gray-100">
+
+    <!-- Navbar e Aside-->
     <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="px-3 py-3 lg:px-5 lg:pl-3">
             <div class="flex items-center justify-between">
@@ -85,7 +90,7 @@ session_start();
             <ul class="space-y-2 font-medium">
                 <!--########## INICIO DASHBOARD ##########-->
                 <li>
-                    <a href="#"
+                    <a href="../dashboard.php"
                         class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                         <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
@@ -126,10 +131,10 @@ session_start();
 
                     <!-- Conteúdo do dropdown -->
                     <div id="dropdown-example" class="hidden mt-2 space-y-2">
-                        <a href="./CRUD/criar_produtos.php"
+                        <a href="./criar_produtos.php"
                             class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Adicionar
                             Produto</a>
-                        <a href="./CRUD/listar_produtos.php"
+                        <a href="./listar_produtos.php"
                             class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Lista
                             de Produtos</a>
                         <a href="#"
@@ -168,7 +173,7 @@ session_start();
 
                 <!--########## INICIO FORNECEDORES ##########-->
                 <li>
-                    <a href="./CRUD/cadastrar_forn.php"
+                    <a href="./cadastrar_forn.php"
                         class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                         <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
@@ -202,10 +207,10 @@ session_start();
                         </svg>
                     </button>
                     <div id="dropdown-produtos" class="hidden mt-2 space-y-2">
-                        <a href="./CRUD/listar_colecoes.php"
+                        <a href="#"
                             class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Lista
                             de coleções</a>
-                        <a href="./CRUD/criar_colecao.php"
+                        <a href="./criar_colecao.php"
                             class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Adicionar
                             coleção</a>
                     </div>
@@ -215,62 +220,38 @@ session_start();
         </div>
     </aside>
 
-    <div class="p-4 sm:ml-64">
-        <div class="p-4 mt-14">
-            <canvas id="meuGrafico" class="container mx-auto my-8"></canvas>
+    <!-- Conteúdo Principal -->
+    <div class="relative w-full max-w-5xl p-6 mx-auto ml-64 sm:p-5">
+        <div class="p-6">
+            <h1 class="text-xl font-bold">Lista de Coleções</h1>
         </div>
+        <table class="min-w-full mt-4 overflow-hidden bg-white rounded-lg shadow-md">
+            <thead>
+                <tr class="text-white bg-gray-800">
+                    <th class="px-4 py-3 text-left">ID</th>
+                    <th class="px-4 py-3 text-left">Nome</th>
+                    <th class="px-4 py-3 text-left">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($produto = $resultado->fetch_assoc()): ?>
+                    <tr class="border-b">
+                        <td class="px-4 py-3"><?php echo $produto['idColecao']; ?></td>
+                        <td class="px-4 py-3"><?php echo $produto['nomeColecao']; ?></td>
+                        <td class="px-4 py-3">
+                            <a href="editar_colecoes.php?id=<?php echo $produto['idColecao']; ?>"
+                                class="text-purple-500 hover:underline">Editar</a>
+                            <a href="deletar_produtos.php?id=<?php echo $produto['idColecao']; ?>"
+                                class="ml-4 text-red-500 hover:underline">Deletar</a>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
     </div>
-    <script>
-        async function carregarGrafico() {
-            const response = await fetch('dados_grafico.php');
-            const dados = await response.json();
 
-            //transformar os dados em label e data pro grafico
-            const labels = dados.map(item => item.categoria);
-            const valores = dados.map(item => item.quantidade);
-
-            //criar o grafico
-            const ctx = document.getElementById('meuGrafico').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Quantidade por Categoria',
-                        data: valores,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        window.onload = carregarGrafico;
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownButtons = document.querySelectorAll('[data-dropdown-toggle]');
-            dropdownButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const dropdownId = button.getAttribute('data-dropdown-toggle');
-                    const dropdown = document.getElementById(dropdownId);
-                    dropdown.classList.toggle('hidden');
-                });
-            });
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
-        integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </body>
 
 </html>

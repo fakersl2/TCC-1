@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Mover o arquivo para o diretório
         if (move_uploaded_file($_FILES['imagemProduto']['tmp_name'], $caminhoCompleto)) {
             // Inserir o produto
-            $stmt = $conexao->prepare("INSERT INTO produto (nomeProduto, precoProduto, categoriaProduto, marcaProduto, imagemProduto, fkIdFornecedor) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sdsssi", $nomeProduto, $precoProduto, $categoriaProduto, $marcaProduto, $nomeArquivo, $fkIdFornecedor);
+            $stmt = $conexao->prepare("INSERT INTO produto (nomeProduto, precoProduto, categoriaProduto, marcaProduto, imagemProduto, fkIdFornecedor, fkIdColecao) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sdsssii", $nomeProduto, $precoProduto, $categoriaProduto, $marcaProduto, $nomeArquivo, $fkIdFornecedor, $fkIdColecao);
 
             if ($stmt->execute()) {
                 header("Location: listar_produtos.php");
@@ -282,6 +282,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             class="block w-full p-2 mt-1 border border-gray-300 rounded-md" />
                     </div>
 
+                    <div class="mb-4">
+                        <label for="fornecedor" class="block mb-2 text-sm font-medium text-gray-900">Coleção:</label>
+                        <select id="fkIdFornecedor" name="fkIdColecao"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5">
+                            <?php
+                            $fornecedores = $conexao->query("SELECT idFornecedor, nomeFornecedor FROM fornecedor");
+                            while ($fornecedor = $fornecedores->fetch_assoc()) {
+                                echo "<option value=\"{$fornecedor['idFornecedor']}\">{$fornecedor['nomeFornecedor']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
 
                     <div class="sm:col-span-2">
                         <label for="descricaoProduto"

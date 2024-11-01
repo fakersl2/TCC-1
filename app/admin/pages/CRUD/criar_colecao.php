@@ -2,8 +2,20 @@
 session_start();
 include("../../../../backend/conexao.php");
 
-$sql = "SELECT * FROM produto";
-$resultado = $conexao->query($sql);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nomeColecao = $_POST['nomeColecao'];
+
+    // Prepare statement for inserting the collection
+    $stmt = $conexao->prepare("INSERT INTO colecao (nomeColecao) VALUES (?)");
+    $stmt->bind_param("s", $nomeColecao);
+
+    if ($stmt->execute()) {
+        header("Location: listar_colecoes.php");
+        exit();
+    } else {
+        echo "Erro ao cadastrar coleção: " . $stmt->error;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -11,12 +23,11 @@ $resultado = $conexao->query($sql);
 
 <head>
     <meta charset="UTF-8">
-    <title>Listar Produtos</title>
+    <title>Cadastrar Coleção</title>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
 
 <body class="bg-gray-100">
-
     <!-- Navbar e Aside-->
     <nav class="sticky top-0 z-10 px-3 py-3 bg-white border-b-2 border-gray-200 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
@@ -65,7 +76,7 @@ $resultado = $conexao->query($sql);
 
                         <ul class="py-1" role="none">
                             <li>
-                                <a href="../CRUD/listar_produtos.html"
+                                <a href="../CRUD/listar_produtos.php"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
                                     role="menuitem">Dashboard</a>
                             </li>
@@ -84,13 +95,15 @@ $resultado = $conexao->query($sql);
         </div>
     </nav>
     <aside id="logo-sidebar"
-        class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 "
+        class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
         aria-label="Sidebar">
-        <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+        <div class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
             <ul class="space-y-2 font-medium">
+                <!--########## INICIO DASHBOARD ##########-->
                 <li>
-                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-                        <svg class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 "
+                    <a href="../dashboard.php"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <svg class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 22 21">
                             <path
@@ -101,13 +114,18 @@ $resultado = $conexao->query($sql);
                         <span class="ms-3">Dashboard</span>
                     </a>
                 </li>
+                <!--########## FIM DASHBOARD ##########-->
+
+
+
+                <!--########## INICIO PRODUTOS ##########-->
                 <li>
                     <!-- Botão de dropdown -->
                     <button type="button"
-                        class="flex items-center w-full p-3 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 "
+                        class="flex items-center w-full p-3 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                         aria-controls="dropdown-example" data-collapse-toggle="dropdown-example" aria-expanded="false"
                         id="dropdown-button">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"
+                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                             <path fill-rule="evenodd"
                                 d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
@@ -124,17 +142,27 @@ $resultado = $conexao->query($sql);
 
                     <!-- Conteúdo do dropdown -->
                     <div id="dropdown-example" class="hidden mt-2 space-y-2">
-                        <a href="../CRUD/criar_produtos.php"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Adicionar
+                        <a href="./criar_produtos.php"
+                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Adicionar
                             Produto</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ">Lista
+                        <a href="./listar_produtos.php"
+                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Lista
                             de Produtos</a>
+                        <a href="#"
+                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Categorias</a>
+
                     </div>
 
                 </li>
+                <!--########## FIM PRODUTOS ##########-->
+
+
+
+                <!--########## INICIO TRANSAÇÕES ##########-->
                 <li>
-                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 ">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 "
+                    <a href="#"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                             <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
                             <path fill-rule="evenodd"
@@ -147,13 +175,18 @@ $resultado = $conexao->query($sql);
 
                         <span class="flex-1 ms-3 whitespace-nowrap">Transações</span>
                         <span
-                            class="inline-flex items-center justify-center w-3 h-3 p-3 text-sm font-medium text-purple-800 bg-purple-100 rounded-full ms-3 ">3</span>
+                            class="inline-flex items-center justify-center w-3 h-3 p-3 text-sm font-medium text-purple-800 bg-purple-100 rounded-full ms-3 dark:bg-purple-900 dark:text-purple-300">3</span>
                     </a>
                 </li>
+                <!--########## FIM TRANSAÇÕES ##########-->
+
+
+
+                <!--########## INICIO FORNECEDORES ##########-->
                 <li>
-                    <a href="cadastrar_forn.php"
-                        class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 ">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 "
+                    <a href="./cadastrar_forn.php"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                             aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                             viewBox="0 0 20 18">
                             <path
@@ -162,69 +195,61 @@ $resultado = $conexao->query($sql);
                         <span class="flex-1 ms-3 whitespace-nowrap">Fornecedores</span>
                     </a>
                 </li>
+                <!--########## FIM FORNECEDORES ##########-->
+
+
+                <!--########## INICIO COLEÇÕES ##########-->
                 <li>
-                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 ">
-                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 "
-                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                            viewBox="0 0 18 20">
-                            <path
-                                d="M17 5.923A1 1 0 0 0 16 5h-3V4a4 4 0 1 0-8 0v1H2a1 1 0 0 0-1 .923L.086 17.846A2 2 0 0 0 2.08 20h13.84a2 2 0 0 0 1.994-2.153L17 5.923ZM7 9a1 1 0 0 1-2 0V7h2v2Zm0-5a2 2 0 1 1 4 0v1H7V4Zm6 5a1 1 0 1 1-2 0V7h2v2Z" />
+                    <button type="button"
+                        class="flex items-center w-full p-3 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                        aria-controls="dropdown-produtos" data-collapse-toggle="dropdown-produtos"
+                        aria-expanded="false">
+                        <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
+                                clip-rule="evenodd" />
                         </svg>
-                        <span class="flex-1 ms-3 whitespace-nowrap">Products</span>
-                    </a>
+                        <span class="flex-1 text-left ms-3 whitespace-nowrap">Coleções</span>
+                        <svg class="w-3 h-3 transition-transform duration-300" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 1 4 4 4-4"></path>
+                        </svg>
+                    </button>
+                    <div id="dropdown-produtos" class="hidden mt-2 space-y-2">
+                        <a href="#"
+                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Lista
+                            de coleções</a>
+                        <a href="./criar_colecao.php"
+                            class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Adicionar
+                            coleção</a>
+                    </div>
                 </li>
+                <!--########## FIM COLEÇÕES ##########-->
             </ul>
         </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteudo Principal -->
     <div class="relative w-full max-w-5xl p-6 mx-auto ml-64 sm:p-5">
         <div class="p-6">
-            <h1 class="text-xl font-bold">Lista de Produtos</h1>
+            <h1 class="mb-4 text-2xl font-bold">Cadastrar Coleção</h1>
+            <form method="POST">
+                <div class="grid gap-4 mb-4 sm:grid-cols-2">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Nome da coleção:</label>
+                        <input type="text" name="nomeColecao" required
+                            class="block w-full p-2 mt-1 border border-gray-300 rounded-md" />
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="text-white inline-flex items-center bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                    Cadastrar Coleção
+                </button>
+            </form>
         </div>
-        <table class="min-w-full mt-4 overflow-hidden bg-white rounded-lg shadow-md">
-            <thead>
-                <tr class="text-white bg-gray-800">
-                    <th class="px-4 py-3 text-left">ID</th>
-                    <th class="px-4 py-3 text-left">Nome</th>
-                    <th class="px-4 py-3 text-left">Preço</th>
-                    <th class="px-4 py-3 text-left">Categoria</th>
-                    <th class="px-4 py-3 text-left">Marca</th>
-                    <th class="px-4 py-3 text-left">Coleção</th>
-                    <th class="px-4 py-3 text-left">Descrição</th>
-                    <th class="px-4 py-3 text-left">Imagem</th>
-                    <th class="px-4 py-3 text-left">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($produto = $resultado->fetch_assoc()): ?>
-                    <tr class="border-b">
-                        <td class="px-4 py-3"><?php echo $produto['idProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['nomeProduto']; ?></td>
-                        <td class="px-4 py-4">R$
-                            <?php echo number_format($produto['precoProduto'], 2, ',', '.'); ?>
-                        </td>
-                        <td class="px-4 py-3"><?php echo $produto['categoriaProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['marcaProduto']; ?></td>
-                        <td class="px-4 py-3"><?php echo $produto['colecaoProduto']; ?></td>
-                        <td class="px-4 py-3">
-                            <?php echo substr($produto['descricaoProduto'], 0, 50) . (strlen($produto['descricaoProduto']) > 50 ? '...' : ''); ?>
-                        </td>
-                        <td class="px-4 py-3">
-                            <img src="/Tcc/public/uploads/<?php echo htmlspecialchars($produto['imagemProduto']); ?>"
-                                alt="<?php echo htmlspecialchars($produto['nomeProduto']); ?>"
-                                class="object-cover w-16 h-16">
-                        </td>
-                        <td class="px-4 py-3">
-                            <a href="editar_produtos.php?id=<?php echo $produto['idProduto']; ?>"
-                                class="text-purple-500 hover:underline">Editar</a>
-                            <a href="deletar_produtos.php?id=<?php echo $produto['idProduto']; ?>"
-                                class="ml-4 text-red-500 hover:underline">Deletar</a>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
